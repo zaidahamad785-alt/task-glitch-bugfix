@@ -67,20 +67,26 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
     !!priority &&
     !!status;
 
-  const handleSubmit = () => {
-    const safeTime = typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1; // auto-correct
-    const payload: Omit<Task, 'id'> & { id?: string } = {
-      title: title.trim(),
-      revenue: typeof revenue === 'number' ? revenue : 0,
-      timeTaken: safeTime,
-      priority: ((priority || 'Medium') as Priority),
-      status: ((status || 'Todo') as Status),
-      notes: notes.trim() || undefined,
-      ...(initial ? { id: initial.id } : {}),
-    };
-    onSubmit(payload);
-    onClose();
-  };
+  const handleSubmit = () => {
+    const safeTime = typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1; // auto-correct
+    // FIX: Get the existing creation time if editing, or use a placeholder time if adding.
+    // This satisfies the Omit<Task, 'id'> type requirement.
+    const taskCreatedAt = initial ? initial.createdAt : new Date().toISOString(); 
+    
+    const payload: Omit<Task, 'id'> & { id?: string } = {
+      title: title.trim(),
+      revenue: typeof revenue === 'number' ? revenue : 0,
+      timeTaken: safeTime,
+      priority: ((priority || 'Medium') as Priority),
+      status: ((status || 'Todo') as Status),
+      notes: notes.trim() || undefined,
+      // Add the required createdAt property
+      createdAt: taskCreatedAt,
+      ...(initial ? { id: initial.id } : {}),
+    };
+    onSubmit(payload);
+    onClose();
+  };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
