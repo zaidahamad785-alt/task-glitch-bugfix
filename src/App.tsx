@@ -1,8 +1,8 @@
-import { Alert, Avatar, Box, Button, CircularProgress, Container, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Button, CircularProgress, Container, MenuItem, Select, SnackbarCloseReason, Stack, TextField, Typography } from '@mui/material';
 import MetricsBar from '@/components/MetricsBar';
 import TaskTable from '@/components/TaskTable';
 import UndoSnackbar from '@/components/UndoSnackbar';
-import { useCallback, useMemo, useState } from 'react';
+import { SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import { UserProvider, useUser } from '@/context/UserContext';
 import { TasksProvider, useTasksContext } from '@/context/TasksContext';
 import ChartsDashboard from '@/components/ChartsDashboard';
@@ -18,9 +18,14 @@ import {
   computeTotalRevenue,
 } from '@/utils/logic';
 
+
 function AppContent() {
-  const { loading, error, metrics, derivedSorted, addTask, updateTask, deleteTask, undoDelete, lastDeleted } = useTasksContext();
-  const handleCloseUndo = () => {};
+  const { loading, error, metrics, derivedSorted, addTask, updateTask, deleteTask, undoDelete, lastDeleted, clearLastDeleted } = useTasksContext();
+  const handleCloseUndo = (_event: Event | SyntheticEvent | undefined, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') return;
+    // When the snackbar closes (auto or manual), clear the lastDeleted so undo window ends.
+    clearLastDeleted();
+  };
   const [q, setQ] = useState('');
   const [fStatus, setFStatus] = useState<string>('All');
   const [fPriority, setFPriority] = useState<string>('All');
@@ -127,7 +132,7 @@ function AppContent() {
           {!loading && !error && <AnalyticsDashboard tasks={filtered} />}
           {!loading && !error && <ActivityLog items={activity} />}
           <UndoSnackbar open={!!lastDeleted} onClose={handleCloseUndo} onUndo={handleUndo} />
-         </Stack>
+        </Stack>
       </Container>
     </Box>
   );

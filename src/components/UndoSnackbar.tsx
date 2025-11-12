@@ -1,8 +1,9 @@
-import { Snackbar, Button } from '@mui/material';
+import { Snackbar, Button, SnackbarCloseReason } from '@mui/material';
+import { SyntheticEvent } from 'react';
 
 interface Props {
   open: boolean;
-  onClose: () => void;
+  onClose: (event: Event | SyntheticEvent<any, Event>, reason?: SnackbarCloseReason) => void;
   onUndo: () => void;
 }
 

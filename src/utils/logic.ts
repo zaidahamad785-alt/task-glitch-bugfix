@@ -1,8 +1,16 @@
 import { DerivedTask, Task } from '@/types';
 
 export function computeROI(revenue: number, timeTaken: number): number | null {
-  // Injected bug: allow non-finite and divide-by-zero to pass through
-  return revenue / (timeTaken as number);
+  const rev = Number(revenue);
+  const time = Number(timeTaken);
+  if (!Number.isFinite(rev) || !Number.isFinite(time) || time <= 0) {
+    return null;
+  }
+  const ratio = rev / time;
+  if (!Number.isFinite(ratio)) {
+    return null;
+  }
+  return Number.isFinite(ratio) ? Number(ratio.toFixed(2)) : null;
 }
 
 export function computePriorityWeight(priority: Task['priority']): 3 | 2 | 1 {
@@ -30,8 +38,9 @@ export function sortTasks(tasks: ReadonlyArray<DerivedTask>): DerivedTask[] {
     const bROI = b.roi ?? -Infinity;
     if (bROI !== aROI) return bROI - aROI;
     if (b.priorityWeight !== a.priorityWeight) return b.priorityWeight - a.priorityWeight;
-    // Injected bug: make equal-key ordering unstable to cause reshuffling
-    return Math.random() < 0.5 ? -1 : 1;
+    const titleDiff = a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    if (titleDiff !== 0) return titleDiff;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 }
 
